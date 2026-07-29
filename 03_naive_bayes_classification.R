@@ -1,148 +1,342 @@
-#View the data and variables
+# --------------------------------------------------
+# NHS Patient Review Text Analysis
+# Part 3: Naive Bayes Classification
+#
+# Author: Adel Rahman
+#
+# Purpose:
+# Build Naive Bayes classification models to predict
+# positive and negative NHS patient reviews.
+#
+# Methods:
+# - Compare different preprocessing strategies
+# - Train/test split
+# - Naive Bayes classification
+# - Model evaluation
+# --------------------------------------------------
+
+
+# --------------------------------------------------
+# Libraries
+# --------------------------------------------------
+
+library(tidyverse)
+library(quanteda)
+library(quanteda.textmodels)
+library(caret)
+
+
+
+# --------------------------------------------------
+# 1. Dataset Overview
+# --------------------------------------------------
+
 glimpse(nhs_reviews)
 
-#task 1
+
+
+# --------------------------------------------------
+# 2. Set Random Seed
+# --------------------------------------------------
+
 set.seed(2040)
 
 
-#task 2
-# Rename the DFM from Part 1 as nhsr_stop
+
+# --------------------------------------------------
+# 3. Create Stopword-Removed DFM
+# --------------------------------------------------
+
+# Remove:
+# - punctuation
+# - numbers
+# - symbols
+# - stopwords
+
 nhsr_stop <- nhs_corpus %>%
-  tokens(remove_punct = TRUE, remove_numbers = TRUE, remove_symbols = TRUE) %>%
+  tokens(
+    remove_punct = TRUE,
+    remove_numbers = TRUE,
+    remove_symbols = TRUE
+  ) %>%
   dfm() %>%
   dfm_remove(stopwords("en"))
+
+
 print(nhsr_stop)
 
-#task 3
+
+
+# --------------------------------------------------
+# 4. Create Trimmed DFM
+# --------------------------------------------------
+
+# Keep original tokens but remove rare terms
+
 nhsr_trim <- nhs_corpus %>%
   tokens() %>%
   dfm() %>%
   dfm_trim(min_termfreq = 7)
+
+
 print(nhsr_trim)
 
-#task 4
+
+
+# --------------------------------------------------
+# 5. Compare DFM Dimensions
+# --------------------------------------------------
+
 str(nhsr_stop)
 
-#docs 2000
-#features 7616
-#x 70392
+# Documents: 2000
+# Features: 7616
+# Non-zero entries: 70392
+
 
 str(nhsr_trim)
 
-#docs 2000
-#features 1694
-#x 110995
+# Documents: 2000
+# Features: 1694
+# Non-zero entries: 110995
 
-#task 5 (stop)
-nhsr_stop$train <- sample(x = c(TRUE, FALSE), #Assign to train
-                            #variable (1/10 or T/F)
-                            size = nrow(nhsr_stop), #No. of items 
-                            #choose
-                            replace = TRUE, #Sampling with replacement
-                            prob = c(.75, .25)) #% data assigned to
-#training and testing sets
 
-# Subset to training set observations
 
-nhsr_stop_dfm_train <- dfm_subset(nhsr_stop, train)
+# --------------------------------------------------
+# 6. Naive Bayes Model: Stopword Removed DFM
+# --------------------------------------------------
 
-#Subset to test set observations
+# Create training/testing split
 
-nhsr_stop_dfm_test <- dfm_subset(nhsr_stop, !train)
+nhsr_stop$train <- sample(
+  x = c(TRUE, FALSE),
+  size = nrow(nhsr_stop),
+  replace = TRUE,
+  prob = c(.75, .25)
+)
 
-#Naive Bayes classifier
-nb_train <- textmodel_nb(x = nhsr_stop_dfm_train,
-                         y = nhsr_stop_dfm_train$review_positive,
-                         prior = "docfreq")
-#Retrieve the conditional word probabilities
-head(sort(coef(nb_train)[,"Positive"], decreasing = T), 5)
 
-head(sort(coef(nb_train)[,"Negative"], decreasing = T), 5)
+nhsr_stop_dfm_train <- dfm_subset(
+  nhsr_stop,
+  train
+)
 
-#task 5 (for trim instead of stop)
-nhsr_trim$train <- sample(x = c(TRUE, FALSE), #Assign to train
-                          #variable (1/10 or T/F)
-                          size = nrow(nhsr_trim), #No. of items 
-                          #choose
-                          replace = TRUE, #Sampling with replacement
-                          prob = c(.75, .25)) #% data assigned to
-#training and testing sets
 
-# Subset to training set observations
+nhsr_stop_dfm_test <- dfm_subset(
+  nhsr_stop,
+  !train
+)
 
-nhsr_trim_dfm_train <- dfm_subset(nhsr_trim, train)
 
-#Subset to test set observations
 
-nhsr_trim_dfm_test <- dfm_subset(nhsr_trim, !train)
+# Train Naive Bayes model
 
-#Naive Bayes classifier
-nb_train_trim <- textmodel_nb(x = nhsr_trim_dfm_train,
-                         y = nhsr_trim_dfm_train$review_positive,
-                         prior = "docfreq")
-#Retrieve the conditional word probabilities
-head(sort(coef(nb_train_trim)[,"Positive"], decreasing = T), 5)
+nb_train <- textmodel_nb(
+  x = nhsr_stop_dfm_train,
+  y = nhsr_stop_dfm_train$review_positive,
+  prior = "docfreq"
+)
 
-head(sort(coef(nb_train_trim)[,"Negative"], decreasing = T), 5)
 
-#task 6
 
-nhsr_stop_dfm_train$positive_nb_probability <- predict(nb_train, type = "probability")[,2]
+# Most important words by class
 
-nhsr_stop_dfm_train$predicted_classification_nb <- predict(nb_train, type = "class")
+head(
+  sort(coef(nb_train)[,"Positive"], decreasing = TRUE),
+  5
+)
 
-confusion_train <- table(predicted_classification = nhsr_stop_dfm_train$
-                           predicted_classification_nb, 
-                         true_classification = nhsr_stop_dfm_train$review_positive)
+
+head(
+  sort(coef(nb_train)[,"Negative"], decreasing = TRUE),
+  5
+)
+
+
+
+# --------------------------------------------------
+# 7. Naive Bayes Model: Trimmed DFM
+# --------------------------------------------------
+
+
+nhsr_trim$train <- sample(
+  x = c(TRUE, FALSE),
+  size = nrow(nhsr_trim),
+  replace = TRUE,
+  prob = c(.75, .25)
+)
+
+
+nhsr_trim_dfm_train <- dfm_subset(
+  nhsr_trim,
+  train
+)
+
+
+nhsr_trim_dfm_test <- dfm_subset(
+  nhsr_trim,
+  !train
+)
+
+
+
+# Train trimmed Naive Bayes model
+
+nb_train_trim <- textmodel_nb(
+  x = nhsr_trim_dfm_train,
+  y = nhsr_trim_dfm_train$review_positive,
+  prior = "docfreq"
+)
+
+
+
+head(
+  sort(coef(nb_train_trim)[,"Positive"], decreasing = TRUE),
+  5
+)
+
+
+head(
+  sort(coef(nb_train_trim)[,"Negative"], decreasing = TRUE),
+  5
+)
+
+
+
+# --------------------------------------------------
+# 8. Evaluate Stopword-Removed Model
+# --------------------------------------------------
+
+
+# Training predictions
+
+nhsr_stop_dfm_train$predicted_classification_nb <- predict(
+  nb_train,
+  type = "class"
+)
+
+
+confusion_train <- table(
+  predicted_classification =
+    nhsr_stop_dfm_train$predicted_classification_nb,
+  true_classification =
+    nhsr_stop_dfm_train$review_positive
+)
+
+
 confusion_train
 
-confusion_train_statistics <- confusionMatrix(confusion_train, 
-                                              positive = "Positive")
+
+confusion_train_statistics <- confusionMatrix(
+  confusion_train,
+  positive = "Positive"
+)
+
+
 confusion_train_statistics
 
-nhsr_stop_dfm_test$predicted_classification_nb <- predict(nb_train, 
-                                                           newdata = nhsr_stop_dfm_test, 
-                                                           type = "class")
 
-confusion_test <- table(predicted_classification = nhsr_stop_dfm_test$
-                          predicted_classification_nb, 
-                        true_classification = nhsr_stop_dfm_test$
-                          review_positive)
+
+# Testing predictions
+
+nhsr_stop_dfm_test$predicted_classification_nb <- predict(
+  nb_train,
+  newdata = nhsr_stop_dfm_test,
+  type = "class"
+)
+
+
+confusion_test <- table(
+  predicted_classification =
+    nhsr_stop_dfm_test$predicted_classification_nb,
+  true_classification =
+    nhsr_stop_dfm_test$review_positive
+)
+
+
 confusion_test
-confusion_test_statistics <- confusionMatrix(confusion_test, 
-                                             positive = "Positive")
+
+
+confusion_test_statistics <- confusionMatrix(
+  confusion_test,
+  positive = "Positive"
+)
+
+
 confusion_test_statistics
 
-#task 6 Pt. II
 
-nhsr_trim_dfm_train$positive_nb_probability <- predict(nb_trim_train, type = "probability")[,2]
 
-nhsr_trim_dfm_train$predicted_classification_nb <- predict(nb_trim_train, type = "class")
+# --------------------------------------------------
+# 9. Evaluate Trimmed Model
+# --------------------------------------------------
 
-confusion_trim_train <- table(predicted_classification = nhsr_trim_dfm_train$
-                                predicted_classification_nb, 
-                              true_classification = nhsr_trim_dfm_train$review_positive)
-confusion_trim_train
-confusion_trim_train_statistics <- confusionMatrix(confusion_trim_train, 
-                                                   positive = "Positive")
+
+# Training predictions
+
+nhsr_trim_dfm_train$predicted_classification_nb <- predict(
+  nb_train_trim,
+  type = "class"
+)
+
+
+confusion_trim_train <- table(
+  predicted_classification =
+    nhsr_trim_dfm_train$predicted_classification_nb,
+  true_classification =
+    nhsr_trim_dfm_train$review_positive
+)
+
+
+confusion_trim_train_statistics <- confusionMatrix(
+  confusion_trim_train,
+  positive = "Positive"
+)
+
+
 confusion_trim_train_statistics
 
-nhsr_trim_dfm_test$predicted_classification_nb <- predict(nb_trim_train, 
-                                                           newdata = nhsr_trim_dfm_test,
-                                                           type = "class")
 
-confusion_trim_test <- table(predicted_classification = nhsr_trim_dfm_test$
-                               predicted_classification_nb, 
-                             true_classification = nhsr_trim_dfm_test$
-                               review_positive)
-confusion_trim_test
-confusion_trim_test_statistics <- confusionMatrix(confusion_trim_test, 
-                                                  positive = "Positive")
+
+# Testing predictions
+
+nhsr_trim_dfm_test$predicted_classification_nb <- predict(
+  nb_train_trim,
+  newdata = nhsr_trim_dfm_test,
+  type = "class"
+)
+
+
+confusion_trim_test <- table(
+  predicted_classification =
+    nhsr_trim_dfm_test$predicted_classification_nb,
+  true_classification =
+    nhsr_trim_dfm_test$review_positive
+)
+
+
+confusion_trim_test_statistics <- confusionMatrix(
+  confusion_trim_test,
+  positive = "Positive"
+)
+
+
 confusion_trim_test_statistics
 
-#7 The stop dfm has a higher accuracy compared to trim.
-#The stop dfm was tokenized and removed stop words. Trim did not do
-#any of that. The supervisor should be concerned because the 
-#pre-processed stop dfm has an overall higher accuracy.
+
+
+# --------------------------------------------------
+# Conclusion
+# --------------------------------------------------
+
+# The stopword-removed DFM produced stronger classification
+# performance compared with the trimmed DFM.
+#
+# This suggests preprocessing choices influence machine
+# learning performance in text classification tasks.
+#
+# Removing irrelevant terms and focusing on meaningful
+# features improved the model's ability to distinguish
+# positive and negative reviews.
 
 
