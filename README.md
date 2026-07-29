@@ -1,74 +1,134 @@
-# NHS Patient Review Text Analysis
+# NHS Healthcare Review Text Analysis
 
-## Academic Project
+## Overview
 
-This project was completed as part of an academic quantitative text analysis course. The objective was to apply natural language processing (NLP), statistical modeling, and machine learning techniques to analyze healthcare patient reviews.
+This repository contains an academic NLP and quantitative text analysis project analyzing patient reviews of NHS healthcare providers in the United Kingdom.
 
-Using a dataset of NHS patient reviews, this project investigates whether numerical star ratings accurately represent patient sentiment and explores how text-based methods can extract additional insights from written feedback.
+The goal of this project was to investigate whether traditional star ratings accurately represented patient sentiment and to apply multiple text analytics methods to extract insights from unstructured healthcare review data.
 
-## Research Question
+This project was completed as part of coursework in quantitative text analysis and demonstrates the application of statistical programming, natural language processing (NLP), machine learning, and statistical modeling techniques using R.
 
-Do patient star ratings accurately capture satisfaction expressed in written healthcare reviews, and can quantitative text analysis methods provide additional information about patient experiences?
+---
 
 ## Dataset
 
-The dataset contains 2,000 reviews of NHS doctors' surgeries across the United Kingdom.
+The dataset contains 2,000 patient reviews of NHS doctors' surgeries with the following information:
 
-Variables include:
-
-- Patient review text
-- Review title
+- Review text
 - Star rating (1–5)
 - Positive/negative review classification
 - Review date
-- Healthcare provider response status
+- Whether the healthcare provider responded
 
-*Note: The original dataset is not included due to data distribution restrictions.*
+The original dataset is not included due to data distribution restrictions.
 
-## Methods
+---
 
-This project applies four quantitative text analysis approaches:
+## Project Methods
 
 ### 1. Sentiment Analysis
 
-- Cleaned and preprocessed patient review text
-- Created document-feature matrices (DFMs)
-- Applied the LSD2015 sentiment dictionary
-- Calculated sentiment scores
-- Compared text-based sentiment with star ratings
+The first analysis examined whether patient star ratings aligned with the sentiment expressed in written reviews.
+
+Methods used:
+
+- Text preprocessing
+- Tokenization
+- Document-feature matrix creation
+- LSD2015 sentiment dictionary
+- Sentiment score calculation
+
+Key question:
+
+> Do numerical ratings accurately reflect the sentiment expressed in patient reviews?
+
+---
 
 ### 2. Word Embeddings
 
-- Identified frequently occurring terms in patient reviews
-- Created a review-specific dictionary
-- Applied GloVe word embeddings for dictionary expansion
-- Evaluated whether additional terms would significantly impact sentiment analysis
+The second analysis explored whether word embeddings could expand a sentiment dictionary by identifying semantically similar words.
+
+Methods used:
+
+- Frequency-based dictionary creation
+- GloVe word embeddings
+- Cosine similarity
+- Dictionary expansion evaluation
+
+Key question:
+
+> Would expanding the sentiment dictionary improve sentiment analysis results?
+
+---
 
 ### 3. Naive Bayes Classification
 
-- Built machine learning models to classify reviews as positive or negative
-- Compared different text preprocessing strategies
-- Evaluated model performance using:
-  - Sensitivity
-  - Specificity
-  - Accuracy
-  - Balanced accuracy
+The third analysis applied supervised machine learning to predict whether reviews were positive or negative.
+
+Methods used:
+
+- Document-feature matrices
+- Training/testing split
+- Naive Bayes classification
+- Confusion matrices
+- Accuracy, sensitivity, and specificity evaluation
+
+Two preprocessing strategies were compared:
+
+- Stopword removal and text cleaning
+- Term-frequency trimming
+
+Key question:
+
+> How does text preprocessing affect machine learning classification performance?
+
+---
 
 ### 4. Text Scaling
 
-- Applied Wordfish unsupervised text scaling
-- Applied Wordscore supervised text scaling
-- Compared document-level sentiment dimensions between methods
+The final analysis applied statistical NLP techniques to estimate latent dimensions within patient reviews.
 
-## Tools and Technologies
+Methods used:
+
+- Wordfish (unsupervised text scaling)
+- Wordscore (supervised text scaling)
+- Correlation analysis
+- Visualization of document-level scores
+
+Key question:
+
+> Do supervised and unsupervised text scaling approaches identify similar patterns in healthcare reviews?
+
+---
+
+## Technologies Used
 
 - R
 - Quanteda
-- tidyverse
+- Quantitative Text Analysis
 - Natural Language Processing (NLP)
 - Machine Learning
-- Text Mining
-- Statistical Analysis
+- Statistical Modeling
 - Data Visualization
 
+---
+
 ## Repository Structure
+
+- 01_sentiment_analysis.R
+- 02_word_embeddings.R
+- 03_naive_bayes_classification.R
+- 04_text_scaling.R
+- README.md
+
+---
+
+## Skills Demonstrated
+
+- Cleaning and preprocessing unstructured text data
+- Creating analytical features from text
+- Applying NLP methods
+- Building and evaluating classification models
+- Comparing modeling approaches
+- Interpreting quantitative results
+- Communicating analytical findings
